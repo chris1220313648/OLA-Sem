@@ -1,0 +1,54 @@
+# Python and test caches
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Local environments and editors
+.env
+.env.*
+.venv/
+venv/
+.vscode/
+.idea/
+
+# Runtime data and generated metadata
+data/robotwin_dataset*/
+data/robotwin_raw_dataset*/
+data/processed*/
+data/raw*/
+datasets/
+tmp/
+
+# Models, checkpoints, and experiment output
+pretrained_models/
+checkpoints/
+outputs/
+wandb/
+logs/
+tensorboard_logs/
+inference/robotwin/Motus/paths_config.yml
+inference/robotwin/Motus/logs*/
+
+# Large artifacts
+*.hdf5
+*.h5
+*.mp4
+*.avi
+*.npy
+*.npz
+*.pkl
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+*.zip
+*.tar
+*.tar.gz
+
+# Native/build artifacts
+*.so
+build/
+dist/
+*.egg-info/
