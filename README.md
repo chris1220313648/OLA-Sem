@@ -113,21 +113,8 @@ Both commands accept `CONFIG_FILE=/absolute/path/to/paths_config.yml`. The
 single-task entry also accepts `GPU_ID`, `TEST_NUM`, and other variables from
 the example config as environment overrides.
 
-## Verification
+## Acknowledgements
 
-Lightweight checks do not require model weights, RoboTwin, or a GPU:
-
-```bash
-pytest -q
-python -m compileall -q models train utils data inference
-find scripts inference data -name '*.sh' -print0 | xargs -0 -n1 bash -n
-```
-
-Full training and simulator evaluation require external models, converted data,
-RoboTwin, and suitable GPUs; they are not exercised by the lightweight suite.
-
-## License and attribution
-
-This release is provided under the Apache License 2.0 in `LICENSE`. See
-`NOTICE` for upstream attribution. When using the retained Motus implementation,
-please also follow the citation guidance of the upstream project.
+This repository is based on and modified from
+[Motus](https://github.com/thu-ml/Motus). We sincerely thank the Motus authors
+for their valuable open-source work and contribution to the community.
