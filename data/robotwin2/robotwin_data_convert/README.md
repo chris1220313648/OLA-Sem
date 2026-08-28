@@ -35,8 +35,7 @@ python data/robotwin2/robotwin_data_convert/robotwin_generate_language_action.py
   --window-size 16
 ```
 
-Use `python <script> --help` for the optional epos, language-action, language
-image, and T5 cache generators.
+
 
 ## Input layout
 
@@ -71,5 +70,3 @@ robotwin_dataset/
     └── language_action/
 ```
 
-Generated `.hdf5`, `.mp4`, and `.pt` files are excluded by the repository
-`.gitignore`.
