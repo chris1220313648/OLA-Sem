@@ -32,11 +32,13 @@ pip install flash-attn --no-build-isolation
 pip install -r requirements.txt
 ```
 
-Download the pretrained weights from
-[Kosmos524/d0_v on ModelScope](https://www.modelscope.cn/models/Kosmos524/d0_v/files):
+Download the pretrained weights from:
+
+- [Kosmos524/d0_v on ModelScope](https://www.modelscope.cn/models/Kosmos524/d0_v/files)
+- [Qwen3-VL-2B-Instruct on Hugging Face](https://huggingface.co/Qwen/Qwen3-VL-2B-Instruct)
+- [Wan2.2-TI2V-5B on Hugging Face](https://huggingface.co/Wan-AI/Wan2.2-TI2V-5B)
 
 ```bash
-pip install modelscope
 modelscope download --model Kosmos524/d0_v --local_dir ./pretrained_models
 ```
 
