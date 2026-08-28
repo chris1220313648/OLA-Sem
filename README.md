@@ -74,7 +74,6 @@ Useful overrides are `DEEPSPEED_CONFIG`, `OUTPUT_DIR`, `RUN_NAME`,
 
 - `robotwin_lap.yaml`: standard LAP training.
 - `robotwin_lap_clean.yaml`: clean split.
-- `robotwin_lap_idm.yaml`: IK-style language-action sampling.
 - `robotwin_lap_history_flow*.yaml`: executed-qpos history as action source.
 - `robotwin_lap_future_noise.yaml`: history initialization with future-video
   noise augmentation.
