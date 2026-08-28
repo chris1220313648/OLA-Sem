@@ -19,7 +19,3 @@ inference_mode: "history_flow"
 num_inference_timesteps: 4
 history_action_noise_std: 0.02
 future_video_denoise_fraction: 1.0
-
-save_images: false
-image_save_interval: 0
-task_timeout_seconds: 3600

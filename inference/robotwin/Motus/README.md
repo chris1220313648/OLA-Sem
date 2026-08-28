@@ -67,10 +67,6 @@ inference_mode: "history_flow"
 num_inference_timesteps: 4
 history_action_noise_std: 0.02
 future_video_denoise_fraction: 1.0
-
-save_images: false
-image_save_interval: 0
-task_timeout_seconds: 3600
 ```
 
 Required paths:
@@ -148,37 +144,15 @@ CONFIG_FILE=/absolute/path/to/paths_config.yml bash auto_eval.sh
 Common values can also be overridden without editing YAML:
 
 ```bash
-GPU_ID=1 TEST_NUM=10 NUM_INFERENCE_TIMESTEPS=4 \
-SAVE_IMAGES=true IMAGE_SAVE_INTERVAL=10 \
-bash eval.sh hanging_mug
+GPU_ID=1 TEST_NUM=10 NUM_INFERENCE_TIMESTEPS=4 bash eval.sh hanging_mug
 ```
 
 Other supported overrides include `ROBOTWIN_ROOT`, `CONDA_ENV`,
 `CHECKPOINT_PATH`, `WAN_PATH`, `VLM_PATH`, `TASK_CONFIG`, `SEED`,
 `INSTRUCTION_TYPE`, `INFERENCE_MODE`, `HISTORY_ACTION_NOISE_STD`,
-`FUTURE_VIDEO_DENOISE_FRACTION`, `TASK_TIMEOUT_SECONDS`, `TASKS_FILE`, and
-`GPU_IDS`.
+`FUTURE_VIDEO_DENOISE_FRACTION`, `TASKS_FILE`, and `GPU_IDS`.
 
 ## Logs and troubleshooting
 
 Each run writes logs to `logs_YYYYMMDD_HHMMSS/` under the policy directory
-unless `LOG_DIR` is set. Diagnostic images are disabled by default; when
-enabled, they are stored under `<log_dir>/images/<task>/`.
-
-Common failures:
-
-- `configuration not found`: copy `paths_config.example.yml` to
-  `paths_config.yml`, or set `CONFIG_FILE`.
-- `deploy this directory`: copy the policy to `<robotwin_root>/policy/Motus`.
-- `Checkpoint file not found`: ensure `checkpoint_path` points to the
-  `pytorch_model/` directory rather than its parent.
-- `history_flow requires checkpoint metadata`: place the compatible
-  `config.json` beside `pytorch_model/`, as shown above.
-- Conda activation failure: activate the RoboTwin environment manually and set
-  `conda_env: ""`.
-
-The scripts do not load site-specific CUDA modules. Load any modules required
-by your cluster before running evaluation.
-
-This deployment is adapted from the
-[Motus RoboTwin evaluation workflow](https://github.com/thu-ml/Motus/blob/main/inference/robotwin/Motus/README.md).
+unless `LOG_DIR` is set.

@@ -14,9 +14,6 @@ from collections import deque
 import yaml
 from PIL import Image
 from transformers import AutoProcessor
-import matplotlib.pyplot as plt
-import matplotlib
-matplotlib.use('Agg')  # Use non-interactive backend
 
 # Add model paths
 POLICY_ROOT = str(Path(__file__).parent)
@@ -56,10 +53,6 @@ class MotusPolicy:
         history_action_noise_std: Optional[float] = None,
         future_video_denoise_fraction: Optional[float] = None,
         device: str = "cuda",
-        log_dir: Optional[str] = None,
-        task_name: Optional[str] = None,
-        save_images: bool = False,
-        image_save_interval: int = 0,
     ):
         self.device = device
         self.checkpoint_path = checkpoint_path
@@ -117,22 +110,6 @@ class MotusPolicy:
         # Load normalization stats
         self._load_normalization_stats()
         
-        # Diagnostic frame grids are disabled by default for formal evaluation.
-        # Synchronous PNG writes are particularly expensive on shared/NFS storage.
-        self.save_images = bool(save_images)
-        self.image_save_interval = int(image_save_interval)
-        if self.image_save_interval < 0:
-            raise ValueError(
-                "image_save_interval must be non-negative, got "
-                f"{self.image_save_interval}"
-            )
-        base_log_dir = log_dir or os.environ.get('LOG_DIR') or str(Path(__file__).resolve().parent.parent / "logs")
-        task_dir_name = task_name or os.environ.get('TASK_NAME') or "default_task"
-        self.save_dir = Path(base_log_dir) / "images" / task_dir_name
-        if self.save_images:
-            self.save_dir.mkdir(parents=True, exist_ok=True)
-        self.episode_count = 0
-        self.step_count = 0
         if "lap" in str(self.checkpoint_path).lower():
             self.use_language_action = True
         else:
@@ -425,7 +402,7 @@ class MotusPolicy:
         action_source = self._build_action_source()
 
         with torch.no_grad():
-            predicted_frames, predicted_actions = self.model.inference_step(
+            _predicted_frames, predicted_actions = self.model.inference_step(
                 first_frame=current_frame,
                 state=self.current_state,
                 action_source=action_source,
@@ -434,20 +411,6 @@ class MotusPolicy:
                 language_embeddings=t5_list,
                 vlm_inputs=[vlm_inputs],
             )
-
-        # Save frame grid
-        if predicted_frames is not None:
-            if predicted_frames.dim() == 5:
-                if predicted_frames.shape[1] == 3:
-                    predicted_frames_viz = predicted_frames.permute(0, 2, 1, 3, 4)
-                else:
-                    predicted_frames_viz = predicted_frames
-                
-                condition_frame_viz = current_frame.squeeze(0)
-                predicted_frames_viz = predicted_frames_viz.squeeze(0)
-                
-                self._save_frame_grid(condition_frame_viz, predicted_frames_viz)
-                self.step_count += 1
 
         actions_real = predicted_actions.squeeze(0).cpu().numpy()
         self.prev_action = actions_real[-1].copy()
@@ -523,47 +486,6 @@ class MotusPolicy:
         denorm = y_flat * self.action_range.unsqueeze(0) + self.action_min.unsqueeze(0)
         return denorm.reshape(shape)
     
-    def _create_frame_grid(self, condition_frame: torch.Tensor, predicted_frames: torch.Tensor) -> Image.Image:
-        """Create horizontal grid."""
-        def tensor_to_numpy(tensor):
-            if tensor.dim() == 3:
-                tensor = tensor.permute(1, 2, 0)
-            tensor = tensor.detach().cpu().float()
-            tensor = torch.clamp(tensor, 0, 1)
-            return (tensor.numpy() * 255).astype(np.uint8)
-        
-        condition_np = tensor_to_numpy(condition_frame)
-        predicted_np = []
-        num_pred_frames = predicted_frames.shape[0]
-        for i in range(num_pred_frames):
-            frame_np = tensor_to_numpy(predicted_frames[i])
-            predicted_np.append(frame_np)
-        
-        while len(predicted_np) < 4:
-            predicted_np.append(predicted_np[-1] if predicted_np else condition_np)
-        
-        all_frames = [condition_np] + predicted_np[:4]
-        grid_image = np.concatenate(all_frames, axis=1)
-        
-        return Image.fromarray(grid_image)
-    
-    def _save_frame_grid(self, condition_frame: torch.Tensor, predicted_frames: torch.Tensor):
-        """Save frame grid to disk."""
-        if not self.save_images:
-            return
-        if self.image_save_interval > 1 and self.step_count % self.image_save_interval != 0:
-            return
-        
-        try:
-            grid_image = self._create_frame_grid(condition_frame, predicted_frames)
-            filename = f"episode_{self.episode_count:04d}_step_{self.step_count:04d}.png"
-            save_path = self.save_dir / filename
-            grid_image.save(save_path)
-            logger.info(f"Saved frame grid to {save_path}")
-        except Exception as e:
-            logger.warning(f"Failed to save frame grid: {e}")
-
-
 def encode_obs(observation):
     """Post-Process Observation"""
     return observation
@@ -585,13 +507,6 @@ def get_model(usr_args):
     future_video_denoise_fraction = usr_args.get(
         'future_video_denoise_fraction'
     )
-    save_images_value = usr_args.get('save_images', False)
-    if isinstance(save_images_value, str):
-        save_images = save_images_value.strip().lower() in {'1', 'true', 'yes', 'on'}
-    else:
-        save_images = bool(save_images_value)
-    image_save_interval = int(usr_args.get('image_save_interval', 0))
-    
     if not wan_path:
         raise ValueError("wan_path not provided in usr_args")
     
@@ -613,10 +528,6 @@ def get_model(usr_args):
         future_video_denoise_fraction=future_video_denoise_fraction,
         config_path=str(config_path),
         device=device,
-        log_dir=usr_args.get('log_dir'),
-        task_name=usr_args.get('task_name'),
-        save_images=save_images,
-        image_save_interval=image_save_interval,
     )
     
     return policy
@@ -649,6 +560,4 @@ def reset_model(model):
     model.is_first_step = True
     model.prev_action = None
     model.real_qpos_history.clear()
-    model.episode_count += 1
-    model.step_count = 0
-    logger.info(f"Model reset completed for episode {model.episode_count}")
+    logger.info("Model reset completed")

@@ -46,9 +46,6 @@ INFERENCE_MODE="${INFERENCE_MODE:-$(yaml_value inference_mode)}"
 NUM_INFERENCE_TIMESTEPS="${NUM_INFERENCE_TIMESTEPS:-$(yaml_value num_inference_timesteps)}"
 HISTORY_ACTION_NOISE_STD="${HISTORY_ACTION_NOISE_STD:-$(yaml_value history_action_noise_std)}"
 FUTURE_VIDEO_DENOISE_FRACTION="${FUTURE_VIDEO_DENOISE_FRACTION:-$(yaml_value future_video_denoise_fraction)}"
-SAVE_IMAGES="${SAVE_IMAGES:-$(yaml_value save_images)}"
-IMAGE_SAVE_INTERVAL="${IMAGE_SAVE_INTERVAL:-$(yaml_value image_save_interval)}"
-TASK_TIMEOUT_SECONDS="${TASK_TIMEOUT_SECONDS:-$(yaml_value task_timeout_seconds)}"
 GPU_ID="${GPU_ID:-0}"
 
 TASK_CONFIG="${TASK_CONFIG:-demo_randomized}"
@@ -59,9 +56,6 @@ INFERENCE_MODE="${INFERENCE_MODE:-legacy}"
 NUM_INFERENCE_TIMESTEPS="${NUM_INFERENCE_TIMESTEPS:-10}"
 HISTORY_ACTION_NOISE_STD="${HISTORY_ACTION_NOISE_STD:-0.02}"
 FUTURE_VIDEO_DENOISE_FRACTION="${FUTURE_VIDEO_DENOISE_FRACTION:-1.0}"
-SAVE_IMAGES="${SAVE_IMAGES:-false}"
-IMAGE_SAVE_INTERVAL="${IMAGE_SAVE_INTERVAL:-0}"
-TASK_TIMEOUT_SECONDS="${TASK_TIMEOUT_SECONDS:-3600}"
 
 for required_name in ROBOTWIN_ROOT CHECKPOINT_PATH WAN_PATH VLM_PATH; do
     required_value="${!required_name}"
@@ -70,11 +64,6 @@ for required_name in ROBOTWIN_ROOT CHECKPOINT_PATH WAN_PATH VLM_PATH; do
         exit 1
     fi
 done
-if ! [[ "$TASK_TIMEOUT_SECONDS" =~ ^[1-9][0-9]*$ ]]; then
-    echo "Error: TASK_TIMEOUT_SECONDS must be a positive integer" >&2
-    exit 1
-fi
-
 DEPLOYED_POLICY_DIR="$ROBOTWIN_ROOT/policy/Motus"
 if [[ ! -f "$DEPLOYED_POLICY_DIR/deploy_policy.yml" ]]; then
     echo "Error: deploy this directory to $DEPLOYED_POLICY_DIR first." >&2
@@ -105,7 +94,6 @@ echo "Evaluating $TASK_NAME on GPU $GPU_ID (mode=$INFERENCE_MODE)"
 
 set +e
 PYTHONWARNINGS=ignore::UserWarning \
-timeout --signal=TERM --kill-after=60s "${TASK_TIMEOUT_SECONDS}s" \
 python script/eval_policy.py \
     --config "policy/Motus/deploy_policy.yml" \
     --overrides \
@@ -123,13 +111,7 @@ python script/eval_policy.py \
     --num_inference_timesteps "$NUM_INFERENCE_TIMESTEPS" \
     --history_action_noise_std "$HISTORY_ACTION_NOISE_STD" \
     --future_video_denoise_fraction "$FUTURE_VIDEO_DENOISE_FRACTION" \
-    --save_images "$SAVE_IMAGES" \
-    --image_save_interval "$IMAGE_SAVE_INTERVAL" \
     2>&1 | tee "$LOG_FILE"
 exit_code=${PIPESTATUS[0]}
 set -e
-
-if [[ "$exit_code" -eq 124 ]]; then
-    echo "Error: $TASK_NAME timed out after ${TASK_TIMEOUT_SECONDS}s" >&2
-fi
 exit "$exit_code"
