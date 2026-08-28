@@ -2,12 +2,9 @@
 
 OLA-SEM is a focused open-source release for language action
 training and RoboTwin 2.0 inference. It is derived from
-[Motus](https://github.com/thu-ml/Motus) and keeps the original `Motus` Python
-class names and `policy/Motus` deployment directory so existing checkpoints
-remain compatible.
+[Motus](https://github.com/thu-ml/Motus).
 
-This repository contains source code only. It does **not** include datasets,
-pretrained backbones, checkpoints, experiment output, or RoboTwin itself.
+
 
 ## Contents
 
