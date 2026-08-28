@@ -23,12 +23,12 @@ skip_existing: true        # Skip already processed episodes
 # Dataset Structure Options
 # ============================================================================
 # Expected source structure:
-# source_root/
+# source_root/                         # or source_root/dataset/
 #   ├── {task_name}/
-#   │   ├── demo_clean/
+#   │   ├── aloha-agilex_clean_50/
 #   │   │   ├── data/episode*.hdf5
 #   │   │   └── instructions/episode*.json
-#   │   └── demo_randomized/
+#   │   └── aloha-agilex_randomized_500/
 #   │       ├── data/episode*.hdf5
 #   │       └── instructions/episode*.json
 #

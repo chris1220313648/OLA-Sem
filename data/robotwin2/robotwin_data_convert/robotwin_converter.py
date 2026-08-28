@@ -1,12 +1,17 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-RobotWin Data Converter
+"""Convert task-first RoboTwin episodes into the OLA-SEM dataset layout.
 
-This script converts original RobotWin datasets to our custom format.
-Source: Original RobotWin dataset structure
-Target: Motus compatible format with metas, videos, and qpos
+Source layout::
 
+    source_root/<task>/aloha-agilex_clean_50/data/episode*.hdf5
+    source_root/<task>/aloha-agilex_randomized_500/data/episode*.hdf5
+
+The downloader may add one intermediate ``dataset/`` directory; it is detected
+automatically. Output is grouped by subset and task and contains videos, qpos,
+metadata, and optional T5 caches::
+
+    target_root/<clean|randomized>/<task>/{videos,qpos,metas,umt5_wan}
 """
 
 import os
@@ -653,41 +658,94 @@ class RobotWinConverter:
             failed_files = [path for path, success in all_results if not success]
             logger.warning(f"Failed files: {failed_files[:10]}...")  # Show first 10
     
-    def scan_dataset(self, source_root: str) -> Dict[str, Dict[str, List[Path]]]:
-        """
-        Scan the dataset structure and return organized paths
-        
-        Args:
-            source_root: Root path of the source dataset
-            
-        Returns:
-            Nested dictionary with structure: {subset: {task: [episode_paths]}}
-        """
-        dataset_structure = {}
+    def _map_demo_to_subset(self, demo_name: str) -> Optional[str]:
+        """Map a raw demo directory to its output subset."""
+        demo_type_mapping = self.config.get("demo_type_mapping", {}) or {}
+        mapped = demo_type_mapping.get(demo_name)
+        if mapped:
+            return str(mapped)
+
+        lower_name = demo_name.lower()
+        if "clean" in lower_name:
+            return "clean"
+        if "randomized" in lower_name:
+            return "randomized"
+        return None
+
+    def _is_task_first_root(self, source_path: Path) -> bool:
+        """Return whether a directory contains task/demo_type children."""
+        if not source_path.is_dir():
+            return False
+
+        for task_path in source_path.iterdir():
+            if not task_path.is_dir():
+                continue
+            for demo_path in task_path.iterdir():
+                if demo_path.is_dir() and self._map_demo_to_subset(demo_path.name):
+                    return True
+        return False
+
+    def _resolve_source_root(self, source_root: str) -> Path:
+        """Resolve a direct task-first root or a downloader ``dataset/`` wrapper."""
         source_path = Path(source_root)
-        
-        # Look for subset directories (clean, randomized, etc.)
-        for subset_path in source_path.iterdir():
-            if subset_path.is_dir():
-                subset_name = subset_path.name
-                dataset_structure[subset_name] = {}
-                
-                # Look for task directories
-                for task_path in subset_path.iterdir():
-                    if task_path.is_dir():
-                        task_name = task_path.name
-                        
-                        # Find episode files
-                        hdf5_files = list(task_path.glob("*.hdf5"))
-                        if not hdf5_files:
-                            # Look in data subdirectory
-                            data_dir = task_path / "data"
-                            if data_dir.exists():
-                                hdf5_files = list(data_dir.glob("*.hdf5"))
-                        
-                        if hdf5_files:
-                            dataset_structure[subset_name][task_name] = sorted(hdf5_files)
-        
+        if self._is_task_first_root(source_path):
+            return source_path
+
+        wrapped_path = source_path / "dataset"
+        if self._is_task_first_root(wrapped_path):
+            logger.info("Detected downloader dataset wrapper: %s", wrapped_path)
+            return wrapped_path
+
+        return source_path
+
+    def scan_dataset(self, source_root: str) -> Dict[str, Dict[str, List[Path]]]:
+        """Scan task-first raw data into ``{subset: {task: episodes}}``."""
+        dataset_structure: Dict[str, Dict[str, List[Path]]] = {}
+        source_path = self._resolve_source_root(source_root)
+
+        if not source_path.exists():
+            logger.error("Source root not found: %s", source_path)
+            return dataset_structure
+
+        for task_path in sorted(source_path.iterdir(), key=lambda path: path.name):
+            if not task_path.is_dir():
+                continue
+
+            task_name = task_path.name
+            for demo_path in sorted(task_path.iterdir(), key=lambda path: path.name):
+                if not demo_path.is_dir():
+                    continue
+
+                subset_name = self._map_demo_to_subset(demo_path.name)
+                if subset_name is None:
+                    logger.warning("Skipping unrecognized demo folder: %s", demo_path)
+                    continue
+
+                hdf5_files = list(demo_path.glob("*.hdf5"))
+                if not hdf5_files:
+                    data_dir = demo_path / "data"
+                    if data_dir.exists():
+                        hdf5_files = list(data_dir.glob("*.hdf5"))
+
+                if not hdf5_files:
+                    logger.warning("No .hdf5 files found in %s", demo_path)
+                    continue
+
+                task_episodes = dataset_structure.setdefault(subset_name, {}).setdefault(
+                    task_name, []
+                )
+                task_episodes.extend(sorted(hdf5_files))
+
+        for subset_name, tasks in dataset_structure.items():
+            for task_name, episode_files in tasks.items():
+                tasks[task_name] = sorted(episode_files)
+                logger.info(
+                    "Task %s (%s): %d episodes",
+                    task_name,
+                    subset_name,
+                    len(tasks[task_name]),
+                )
+
         return dataset_structure
     
     def convert_dataset(self):
