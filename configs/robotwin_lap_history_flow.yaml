@@ -112,5 +112,4 @@ resume:
   reset_scheduler: false
 
 finetune:
-  checkpoint_path: "./pretrained_models/Motus"
-
+  checkpoint_path: "./pretrained_models/d0_v"

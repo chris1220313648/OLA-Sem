@@ -39,7 +39,7 @@ Download the pretrained weights from:
 - [Wan2.2-TI2V-5B on Hugging Face](https://huggingface.co/Wan-AI/Wan2.2-TI2V-5B)
 
 ```bash
-modelscope download --model Kosmos524/d0_v --local_dir ./pretrained_models
+modelscope download --model Kosmos524/d0_v --local_dir ./pretrained_models/d0_v
 ```
 
 Keep the downloaded directory structure as follows so that it matches the
@@ -47,7 +47,7 @@ default paths in the training configs:
 
 ```text
 pretrained_models/
-├── Motus/
+├── d0_v/
 ├── Qwen3-VL-2B-Instruct/
 └── Wan2.2-TI2V-5B/
     └── Wan2.2_VAE.pth
