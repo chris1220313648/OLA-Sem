@@ -87,6 +87,9 @@ that metadata and validates `flow_source.mode`, `video_mode`, and
 
 ## RoboTwin inference
 
+See the [RoboTwin inference guide](inference/robotwin/Motus/README.md) for
+environment setup, checkpoint requirements, inference modes, and troubleshooting.
+
 Install RoboTwin 2.0 separately, then deploy the policy directory:
 
 ```bash
