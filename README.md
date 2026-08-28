@@ -32,8 +32,16 @@ pip install flash-attn --no-build-isolation
 pip install -r requirements.txt
 ```
 
-Download the external model assets into the paths referenced by the training
-configs. The default relative layout is:
+Download the pretrained weights from
+[Kosmos524/d0_v on ModelScope](https://www.modelscope.cn/models/Kosmos524/d0_v/files):
+
+```bash
+pip install modelscope
+modelscope download --model Kosmos524/d0_v --local_dir ./pretrained_models
+```
+
+Keep the downloaded directory structure as follows so that it matches the
+default paths in the training configs:
 
 ```text
 pretrained_models/
@@ -42,9 +50,6 @@ pretrained_models/
 └── Wan2.2-TI2V-5B/
     └── Wan2.2_VAE.pth
 ```
-
-The upstream Motus README lists the corresponding Hugging Face repositories.
-Review their licenses before redistributing any weights.
 
 ## RoboTwin data
 
