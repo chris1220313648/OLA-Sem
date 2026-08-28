@@ -13,6 +13,28 @@ python download_robotwin_dataset.py --output_dir ./data/robotwin_raw_dataset
 python robotwin_converter.py --config config.yml
 ```
 
+## Generate language actions
+
+Run the following commands from the repository root. First, extract absolute
+end-effector poses from the raw HDF5 episodes into `epos/*.pt`:
+
+```bash
+python data/robotwin2/robotwin_data_convert/robotwin_generate_epos_from_raw.py \
+  --raw-root ./data/robotwin_raw_dataset \
+  --target-root ./data/robotwin_dataset
+```
+
+Then convert the absolute XYZ/RPY poses into 16-step language-action summaries
+stored as `language_action/*.txt`:
+
+```bash
+python data/robotwin2/robotwin_data_convert/robotwin_generate_language_action.py \
+  --target-root ./data/robotwin_dataset \
+  --input-dir-name epos \
+  --input-mode absolute_xyzrpy \
+  --window-size 16
+```
+
 Use `python <script> --help` for the optional epos, language-action, language
 image, and T5 cache generators.
 
@@ -24,7 +46,7 @@ robotwin_raw_dataset/
     ├── aloha-agilex_clean_50/
     │   ├── data/episode*.hdf5
     │   └── instructions/episode*.json
-    └── aloha-agilex_randomized_50/
+    └── aloha-agilex_randomized_500/
         ├── data/episode*.hdf5
         └── instructions/episode*.json
 ```
@@ -37,12 +59,16 @@ robotwin_dataset/
 │   ├── videos/0.mp4
 │   ├── qpos/0.pt
 │   ├── metas/0.txt
-│   └── umt5_wan/0.pt
+│   ├── umt5_wan/0.pt
+│   ├── epos/0.pt
+│   └── language_action/0.txt
 └── randomized/<task>/
     ├── videos/
     ├── qpos/
     ├── metas/
-    └── umt5_wan/
+    ├── umt5_wan/
+    ├── epos/
+    └── language_action/
 ```
 
 Generated `.hdf5`, `.mp4`, and `.pt` files are excluded by the repository
