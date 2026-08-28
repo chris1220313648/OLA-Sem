@@ -87,35 +87,9 @@ that metadata and validates `flow_source.mode`, `video_mode`, and
 
 ## RoboTwin inference
 
-See the [RoboTwin inference guide](inference/robotwin/Motus/README.md) for
-environment setup, checkpoint requirements, inference modes, and troubleshooting.
+See the [RoboTwin inference guide](inference/robotwin/Motus/README.md) for setup
+and configuration.
 
-Install RoboTwin 2.0 separately, then deploy the policy directory:
-
-```bash
-cp -a inference/robotwin/Motus /path/to/RoboTwin/policy/
-cp inference/robotwin/Motus/paths_config.example.yml \
-   inference/robotwin/Motus/paths_config.yml
-```
-
-Edit `paths_config.yml`. The checkpoint value normally points to an exported
-`pytorch_model` directory whose parent contains `config.json`.
-
-Run a single task from this repository:
-
-```bash
-bash inference/robotwin/Motus/eval.sh hanging_mug
-```
-
-Run every task listed by `tasks_file` across configured or detected GPUs:
-
-```bash
-bash inference/robotwin/Motus/auto_eval.sh
-```
-
-Both commands accept `CONFIG_FILE=/absolute/path/to/paths_config.yml`. The
-single-task entry also accepts `GPU_ID`, `TEST_NUM`, and other variables from
-the example config as environment overrides.
 
 ## Acknowledgements
 
