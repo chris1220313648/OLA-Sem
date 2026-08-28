@@ -1,6 +1,6 @@
 # OLA-SEM
 
-OLA-SEM is a focused open-source release for latent-action-prompt (LAP)
+OLA-SEM is a focused open-source release for language action
 training and RoboTwin 2.0 inference. It is derived from
 [Motus](https://github.com/thu-ml/Motus) and keeps the original `Motus` Python
 class names and `policy/Motus` deployment directory so existing checkpoints
@@ -38,9 +38,6 @@ Download the pretrained weights from:
 - [Qwen3-VL-2B-Instruct on Hugging Face](https://huggingface.co/Qwen/Qwen3-VL-2B-Instruct)
 - [Wan2.2-TI2V-5B on Hugging Face](https://huggingface.co/Wan-AI/Wan2.2-TI2V-5B)
 
-```bash
-modelscope download --model Kosmos524/d0_v --local_dir ./pretrained_models/d0_v
-```
 
 Keep the downloaded directory structure as follows so that it matches the
 default paths in the training configs:
