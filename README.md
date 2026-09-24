@@ -1,8 +1,8 @@
-# OLA-SEM
+# UniWAM: Unified World-Action Model (OLA-SEM)
 
-OLA-SEM is a focused open-source release for language action
-training and RoboTwin 2.0 inference. It is derived from
-[Motus](https://github.com/thu-ml/Motus).
+This repository is the official implementation of UniWAM on RoboTwin. It
+employs three expert MoT models to jointly supervise physical language
+understanding, image generation, and action prediction.
 
 
 
